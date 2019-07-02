@@ -34,3 +34,8 @@ steps:
   inputs:
     workingDirectory: '.'
     cmakeArgs: -DCMAKE_BUILD_TYPE=Debug
+
+- task: CMake@1
+  inputs:
+    workingDirectory: '.'
+    cmakeArgs: --build
