@@ -30,12 +30,17 @@ steps:
 
 # CMake
 # Build with the CMake cross-platform build system
-- task: CMake@1
-  inputs:
-    workingDirectory: '.'
-    cmakeArgs: -DCMAKE_BUILD_TYPE=Debug
+# - task: CMake@1
+#   inputs:
+#     workingDirectory: '.'
+#     cmakeArgs: -DCMAKE_BUILD_TYPE=Debug
 
-- task: CMake@1
-  inputs:
-    # workingDirectory:
-    cmakeArgs: --build .
+# - task: CMake@1
+#   inputs:
+#     # workingDirectory:
+#     cmakeArgs: --build .
+
+- script:
+    cmake ./ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DENABLE_UNITTESTS="ON"
+    cmake --build ./
+  displayName: 'Super cmake'
