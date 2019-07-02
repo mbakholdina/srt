@@ -10,10 +10,11 @@ strategy:
   matrix:
     linux:
       imageName: "ubuntu-16.04"
-    mac:
-      imageName: "macos-10.13"
-    windows:
-      imageName: "vs2017-win2016"
+      configuration: Debug
+    # mac:
+    #   imageName: "macos-10.13"
+    # windows:
+    #   imageName: "vs2017-win2016"
   maxParallel: 3
 
 pool:
@@ -33,7 +34,7 @@ steps:
 - task: CMake@1
   inputs:
     workingDirectory: 'build'
-    cmakeArgs: '../ -DCMAKE_BUILD_TYPE=Debug'
+    cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(configuration)'
   displayName: 'Super cmake'
 
 - task: CMake@1
