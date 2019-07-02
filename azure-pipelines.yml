@@ -20,13 +20,13 @@ pool:
   vmImage: $(imageName)
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+# - script: echo Hello, world!
+#   displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+# - script: |
+#     echo Add other tasks to build, test, and deploy your project.
+#     echo See https://aka.ms/yaml
+#   displayName: 'Run a multi-line script'
 
 # CMake
 # Build with the CMake cross-platform build system
@@ -37,5 +37,5 @@ steps:
 
 - task: CMake@1
   inputs:
-    workingDirectory: '.'
-    cmakeArgs: --build
+    # workingDirectory:
+    cmakeArgs: --build '.'
