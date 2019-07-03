@@ -45,3 +45,8 @@ steps:
 - script: ctest --extra-verbose
   workingDirectory: 'build'
   displayName: 'Run unit tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'CTest'
+    testResultsFiles: '**/TEST-*.xml'
