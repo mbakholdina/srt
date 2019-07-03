@@ -40,7 +40,7 @@ steps:
 - script: echo $[variables.configuration]
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables['configuration'], 'lala') }}
+  condition: ${{ eq(variables.configuration, '') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
