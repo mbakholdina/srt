@@ -48,4 +48,3 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     searchFolder: $(workingDirectory)
   displayName: 'Publish unit tests results'
-
