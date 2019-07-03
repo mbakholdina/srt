@@ -32,12 +32,14 @@ steps:
 - script: echo Hello!
   condition: always() # this step will always run, even if the pipeline is cancelled
 
-- script: echo variables.configuration
+- script: |
+    echo $(configuration)
+    echo $[variables.configuration]
 
-- script: echo Debug
+- script: echo $[variables.configuration]
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables.configuration, variables.configuration_debug) }}
+  condition: ${{ eq(variables.configuration, 'Debug') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
