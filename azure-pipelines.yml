@@ -34,7 +34,8 @@ steps:
 
 - script: echo Debug
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
-  condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
+  # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
+  condition: eq('la', 'la')
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
