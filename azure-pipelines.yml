@@ -11,8 +11,9 @@ strategy:
     linux:
       imageName: "ubuntu-16.04"
       configuration: Debug
-    # mac:
-    #   imageName: "macos-10.13"
+    mac:
+      imageName: "macos-10.13"
+      configuration: Release
     # windows:
     #   imageName: "vs2017-win2016"
   maxParallel: 3
