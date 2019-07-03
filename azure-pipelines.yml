@@ -6,70 +6,38 @@
 trigger:
 - master
 
-variables:
-  configuration_debug: Debug
-  configuration_release: Release
+# variables:
+#   configuration_debug: Debug
+#   configuration_release: Release
 
 strategy:
   matrix:
-    ubuntu1604_debug:
-      imageName: "ubuntu-16.04"
-      configuration: lala
-    ubuntu1604_release:
-      imageName: "ubuntu-16.04"
-      configuration: $(configuration_release)
-    # mac:
-    #   imageName: "macos-10.13"
-    #   configuration: Release
-    # windows:
-    #   imageName: "vs2017-win2016"
+    mac_1:
+      imageName: "macos-10.13"
+      build_type: Debug
+    mac_2:
+      imageName: "macos-10.13"
+      build_type: Release
   maxParallel: 3
 
 pool:
   vmImage: $(imageName)
 
 steps:
-- script: echo Hello!
-  condition: always() # this step will always run, even if the pipeline is cancelled
+- script: brew update
+  displayName: 'Update homebrew'
 
-- script: |
-    echo $(configuration)
-    echo ${{ variables.configuration }}
-    echo ${{ variables.imageName }}
-    echo ${{ variables.vmImage }}
-    echo $[ variables.configuration ]
-    echo ${{ variables.configuration_debug }}
-    echo ${{ variables.configuration_release }}
+- script: brew install openssl gnutls nettle
+  displayName: 'Install OpenSSL'
 
-
-- script: echo Checking if empty
-  # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
-  # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables.configuration, 'lala') }}
-
-
-# - ${{ if eq($(configuration), $(configuration_debug)) }}:
-#   - script: echo Debug
-# - ${{ else }}:
-#   - script: echo Release
-
-
-# - script: |
-#     echo Add other tasks to build, test, and deploy your project.
-#     echo See https://aka.ms/yaml
-#   displayName: 'Run a multi-line script'
-
-# CMake
 # Build with the CMake cross-platform build system
-# - task: CMake@1
-#   inputs:
-#     workingDirectory: 'build'
-#     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(configuration)'
-#   displayName: 'Super cmake'
+- task: CMake@1
+  inputs:
+    workingDirectory: 'build'
+    cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(build_type) -DENABLE_UNITTESTS="ON" -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
+  displayName: 'Super cmake'
 
-# - task: CMake@1
-#   inputs:
-#     workingDirectory: 'build'
-#     cmakeArgs: '--build ./'
-
-
+- task: CMake@1
+  inputs:
+    workingDirectory: 'build'
+    cmakeArgs: '--build ./'
