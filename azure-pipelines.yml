@@ -14,8 +14,7 @@ strategy:
   matrix:
     ubuntu1604_debug:
       imageName: "ubuntu-16.04"
-      variables:
-        configuration: lala
+      configuration: lala
     ubuntu1604_release:
       imageName: "ubuntu-16.04"
       configuration: $(configuration_release)
@@ -36,6 +35,8 @@ steps:
 - script: |
     echo $(configuration)
     echo ${{ variables.configuration }}
+    echo ${{ variables.imageName }}
+    echo ${{ variables.vmImage }}
 
 
 - script: echo Checking if empty
