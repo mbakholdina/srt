@@ -37,6 +37,7 @@ steps:
     echo ${{ variables.configuration }}
     echo ${{ variables.imageName }}
     echo ${{ variables.vmImage }}
+    echo $[ variables.configuration ]
     echo ${{ variables.configuration_debug }}
     echo ${{ variables.configuration_release }}
 
