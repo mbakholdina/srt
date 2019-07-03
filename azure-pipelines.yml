@@ -29,10 +29,15 @@ pool:
   vmImage: $(imageName)
 
 steps:
-- script: 
-      if [$(configuration) == $(configuration_debug)]; then
-        echo Hello, world!
-  displayName: 'Run a one-line script'
+- script: echo Debug
+  condition: eq($(configuration), $(configuration_debug))
+
+
+# - ${{ if eq($(configuration), $(configuration_debug)) }}:
+#   - script: echo Debug
+# - ${{ else }}:
+#   - script: echo Release
+
 
 # - script: |
 #     echo Add other tasks to build, test, and deploy your project.
@@ -41,13 +46,15 @@ steps:
 
 # CMake
 # Build with the CMake cross-platform build system
-- task: CMake@1
-  inputs:
-    workingDirectory: 'build'
-    cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(configuration)'
-  displayName: 'Super cmake'
+# - task: CMake@1
+#   inputs:
+#     workingDirectory: 'build'
+#     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(configuration)'
+#   displayName: 'Super cmake'
 
-- task: CMake@1
-  inputs:
-    workingDirectory: 'build'
-    cmakeArgs: '--build ./'
+# - task: CMake@1
+#   inputs:
+#     workingDirectory: 'build'
+#     cmakeArgs: '--build ./'
+
+
