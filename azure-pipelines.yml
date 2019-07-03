@@ -14,10 +14,10 @@ strategy:
   matrix:
     ubuntu1604_debug:
       imageName: "ubuntu-16.04"
-      # configuration: $(configuration_debug)
+      configuration: $(configuration_debug)
     ubuntu1604_release:
       imageName: "ubuntu-16.04"
-      # configuration: $(configuration_release)
+      configuration: $(configuration_release)
     # mac:
     #   imageName: "macos-10.13"
     #   configuration: Release
