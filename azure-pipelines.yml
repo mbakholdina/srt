@@ -14,7 +14,7 @@ strategy:
   matrix:
     ubuntu1604_debug:
       imageName: "ubuntu-16.04"
-      configuration: $(configuration_debug)
+      configuration: lala
     ubuntu1604_release:
       imageName: "ubuntu-16.04"
       configuration: $(configuration_release)
@@ -32,14 +32,15 @@ steps:
 - script: echo Hello!
   condition: always() # this step will always run, even if the pipeline is cancelled
 
-- script: 
+- script: |
     echo $(configuration)
+    echo ${{ variables.configuration }}
 
 
 - script: echo $[variables.configuration]
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables['configuration'], variables['configuration_debug']) }}
+  condition: ${{ eq(variables['configuration'], 'lala') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
