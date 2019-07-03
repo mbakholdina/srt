@@ -40,7 +40,7 @@ steps:
 - script: echo Checking if empty
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables.configuration, '') }}
+  condition: ${{ eq($(configuration), 'lala') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
