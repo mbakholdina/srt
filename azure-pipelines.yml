@@ -46,3 +46,6 @@ steps:
   inputs:
     testResultsFormat: 'CTest'
     testResultsFiles: '**/TEST-*.xml'
+    searchFolder: $(workingDirectory)
+  displayName: 'Publish unit tests results'
+
