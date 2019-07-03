@@ -37,7 +37,7 @@ steps:
 - script: echo Debug
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq(variables.configuration, Debug) }}
+  condition: ${{ eq(variables.configuration, 'Debug') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
