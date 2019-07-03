@@ -38,7 +38,7 @@ steps:
     cmakeArgs: '--build ./'
   displayName: 'Run cmake to build the project'
 
-- script: ctest --extra-verbose
+- script: ctest -T --extra-verbose
   workingDirectory: $(workingDirectory)
   displayName: 'Run unit tests'
 
