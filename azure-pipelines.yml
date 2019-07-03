@@ -14,7 +14,8 @@ strategy:
   matrix:
     ubuntu1604_debug:
       imageName: "ubuntu-16.04"
-      configuration: lala
+      variables:
+        configuration: lala
     ubuntu1604_release:
       imageName: "ubuntu-16.04"
       configuration: $(configuration_release)
@@ -40,7 +41,7 @@ steps:
 - script: echo Checking if empty
   # condition: $[ if ($(configuration), $(configuration_debug)) == True ]
   # condition: and(succeeded(), eq($(configuration), $(configuration_debug)))
-  condition: ${{ eq($(configuration), 'lala') }}
+  condition: ${{ eq(variables.configuration, 'lala') }}
 
 
 # - ${{ if eq($(configuration), $(configuration_debug)) }}:
