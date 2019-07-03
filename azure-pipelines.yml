@@ -30,14 +30,17 @@ steps:
 - script: brew install openssl gnutls nettle
   displayName: 'Install OpenSSL'
 
-# Build with the CMake cross-platform build system
 - task: CMake@1
   inputs:
     workingDirectory: 'build'
     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(build_type) -DENABLE_UNITTESTS="ON" -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
-  displayName: 'Super cmake'
+  displayName: 'Run cmake to create make files'
 
 - task: CMake@1
   inputs:
     workingDirectory: 'build'
     cmakeArgs: '--build ./'
+  displayName: 'Run cmake to build the project'
+
+- script: ctest --extra-verbose
+  displayName: 'Run unit tests'
