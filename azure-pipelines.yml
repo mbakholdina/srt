@@ -1,27 +1,23 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# SRT core build pipeline
 
 trigger:
 - master
 
-# variables:
-#   configuration_debug: Debug
-#   configuration_release: Release
+variables:
+  workingDirectory: build
+  configurationDebug: Debug
+  configurationRelease: Release
 
 strategy:
   matrix:
-    mac_1:
-      imageName: "macos-10.13"
-      build_type: Debug
-    mac_2:
-      imageName: "macos-10.13"
-      build_type: Release
-  maxParallel: 3
+    1:
+      build_type: $(configurationDebug)
+    2:
+      build_type: $(configurationRelease)
+  maxParallel: 2
 
 pool:
-  vmImage: $(imageName)
+  vmImage: "macos-10.13"
 
 steps:
 - script: brew update
@@ -32,18 +28,18 @@ steps:
 
 - task: CMake@1
   inputs:
-    workingDirectory: 'build'
+    workingDirectory: $(workingDirectory)
     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(build_type) -DENABLE_UNITTESTS="ON" -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
   displayName: 'Run cmake to create make files'
 
 - task: CMake@1
   inputs:
-    workingDirectory: 'build'
+    workingDirectory: $(workingDirectory)
     cmakeArgs: '--build ./'
   displayName: 'Run cmake to build the project'
 
 - script: ctest --extra-verbose
-  workingDirectory: 'build'
+  workingDirectory: $(workingDirectory)
   displayName: 'Run unit tests'
 
 - task: PublishTestResults@2
