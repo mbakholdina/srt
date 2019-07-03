@@ -43,4 +43,5 @@ steps:
   displayName: 'Run cmake to build the project'
 
 - script: ctest --extra-verbose
+  workingDirectory: 'build'
   displayName: 'Run unit tests'
