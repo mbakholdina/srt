@@ -13,7 +13,7 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   
   steps:
-  - ${{ if eq(parameters.os, 'macOS') }}:
+  - ${{ if eq('${{ parameters.os }}', 'macOS') }}:
     - script: echo Mac
     - template: macOS-steps.yml
       parameters:
