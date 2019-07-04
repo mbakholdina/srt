@@ -1,0 +1,9 @@
+parameters:
+  workingDirectory: build  # defaults for any parameters that aren't specified
+  buildType: Release
+  enableLogging: OFF
+  enableHeavyLogging: OFF
+
+steps:
+  - script: echo Hello
+# displayName: 'Update homebrew'
