@@ -8,43 +8,25 @@ variables:
   configurationDebug: Debug
   configurationRelease: Release
 
-strategy:
-  matrix:
-    1:
-      build_type: $(configurationDebug)
-    2:
-      build_type: $(configurationRelease)
-  maxParallel: 2
+jobs:
+# - template: templates/npm-with-params.yml  # Template reference
+#   parameters:
+#     name: Linux
+#     vmImage: 'ubuntu-16.04'
 
-pool:
-  vmImage: "macos-10.13"
+- template: templates/macOS-job.yml
+  parameters:
+    name: macOS_debug
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationDebug)
 
-steps:
-- script: brew update
-  displayName: 'Update homebrew'
+- template: templates/macOS-job.yml
+  parameters:
+    name: macOS_release
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
 
-- script: brew install openssl gnutls nettle
-  displayName: 'Install OpenSSL'
-
-- task: CMake@1
-  inputs:
-    workingDirectory: $(workingDirectory)
-    cmakeArgs: '../ -DCMAKE_BUILD_TYPE=$(build_type) -DENABLE_UNITTESTS="ON" -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
-  displayName: 'Run cmake to create make files'
-
-- task: CMake@1
-  inputs:
-    workingDirectory: $(workingDirectory)
-    cmakeArgs: '--build ./'
-  displayName: 'Run cmake to build the project'
-
-- script: ctest --extra-verbose
-  workingDirectory: $(workingDirectory)
-  displayName: 'Run unit tests'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'CTest'
-    testResultsFiles: '**/TEST-*.xml'
-    searchFolder: $(workingDirectory)
-  displayName: 'Publish unit tests results'
+# - template: templates/npm-with-params.yml  # Template reference
+#   parameters:
+#     name: Windows
+#     vmImage: 'vs2017-win2016'
