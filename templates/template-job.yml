@@ -30,12 +30,6 @@ jobs:
         enableLogging: ${{ parameters.enableLogging }}
         enableHeavyLogging: ${{ parameters.enableHeavyLogging }}
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: ${{ parameters.workingDirectory }}
-      cmakeArgs: '--build ./'
-    displayName: 'Run cmake to build the project'
-
   - script: ctest --extra-verbose
     workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Run unit tests'
