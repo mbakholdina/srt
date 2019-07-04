@@ -26,6 +26,20 @@ jobs:
     vmImage: 'macOS-10.13'
     buildType: $(configurationRelease)
 
+- template: templates/macOS-job.yml
+  parameters:
+    name: macOS_release_logging
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
+    enableLogging: ON
+
+- template: templates/macOS-job.yml
+  parameters:
+    name: macOS_release_heavyLogging
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
+    enableHeavyLogging: ON
+
 # - template: templates/npm-with-params.yml  # Template reference
 #   parameters:
 #     name: Windows
