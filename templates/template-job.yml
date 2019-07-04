@@ -13,8 +13,7 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   
   steps:
-
-  - ${{ if eq(parameters.os, 'macOS') }}:
+  - ${{ if eq(${{ parameters.os }}, 'macOS') }}:
     - template: macOS-steps.yml
       parameters:
         workingDirectory: ${{ parameters.workingDirectory }}
