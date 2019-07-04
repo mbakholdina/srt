@@ -7,13 +7,6 @@ parameters:
   enableLogging: OFF
   enableHeavyLogging: OFF
 
-variables:
-  # workingDirectory: build
-  # configurationDebug: Debug
-  # configurationRelease: Release
-  osMacOS: macOS
-  osLinux: Linux
-
 jobs:
 - job: ${{ parameters.name }}
   pool: 
