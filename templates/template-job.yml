@@ -1,0 +1,49 @@
+parameters:
+  name: ''  # defaults for any parameters that aren't specified
+  vmImage: ''
+  workingDirectory: build
+  buildType: Release
+  enableLogging: OFF
+  enableHeavyLogging: OFF
+
+jobs:
+- job: ${{ parameters.name }}
+  pool: 
+    vmImage: ${{ parameters.vmImage }}
+  
+  steps:
+  # - script: brew update
+  #   displayName: 'Update homebrew'
+
+  # - script: brew install openssl gnutls nettle
+  #   displayName: 'Install OpenSSL'
+
+  # - task: CMake@1
+  #   inputs:
+  #     workingDirectory: ${{ parameters.workingDirectory }}
+  #     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }} -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
+  #   displayName: 'Run cmake to create make files'
+
+  - template: macOS-steps.yml
+    parameters:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      buildType: ${{ parameters.buildType }}
+      enableLogging: ${{ parameters.enableLogging }}
+      enableHeavyLogging: ${{ parameters.enableHeavyLogging }}
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      cmakeArgs: '--build ./'
+    displayName: 'Run cmake to build the project'
+
+  - script: ctest --extra-verbose
+    workingDirectory: ${{ parameters.workingDirectory }}
+    displayName: 'Run unit tests'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'CTest'
+      testResultsFiles: '**/TEST-*.xml'
+      searchFolder: ${{ parameters.workingDirectory }}
+    displayName: 'Publish unit tests results'

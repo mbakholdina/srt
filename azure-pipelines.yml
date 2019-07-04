@@ -14,26 +14,26 @@ jobs:
 #     name: Linux
 #     vmImage: 'ubuntu-16.04'
 
-- template: templates/macOS-job.yml
+- template: templates/template-job.yml
   parameters:
     name: macOS_debug
     vmImage: 'macOS-10.13'
     buildType: $(configurationDebug)
 
-- template: templates/macOS-job.yml
+- template: templates/template-job.yml
   parameters:
     name: macOS_release
     vmImage: 'macOS-10.13'
     buildType: $(configurationRelease)
 
-- template: templates/macOS-job.yml
+- template: templates/template-job.yml
   parameters:
     name: macOS_release_logging
     vmImage: 'macOS-10.13'
     buildType: $(configurationRelease)
     enableLogging: ON
 
-- template: templates/macOS-job.yml
+- template: templates/template-job.yml
   parameters:
     name: macOS_release_heavyLogging
     vmImage: 'macOS-10.13'
