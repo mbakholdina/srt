@@ -21,8 +21,8 @@ jobs:
       sudo apt-get install gcc-mingw-w64-x86-64
       sudo apt-get install gcc-mingw-w64
       sudo apt-get install g++-mingw-w64-x86-64
-      export CC="x86_64-w64-mingw32-gcc"
-      export CXX="x86_64-w64-mingw32-g++"
+      # export CC="x86_64-w64-mingw32-gcc"
+      # export CXX="x86_64-w64-mingw32-g++"
     displayName: 'Install build dependencies'
 
   - script: |
@@ -37,7 +37,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: ${{ parameters.workingDirectory }}
-      cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }} -DUSE_OPENSSL_PC="OFF" -DOPENSSL_ROOT_DIR="$PWD/openssl" -DCMAKE_SYSTEM_NAME="Windows"'
+      cmakeArgs: '../ -DCMAKE_CXX_COMPILER="x86_64-w64-mingw32-g++" -DCMAKE_CC_COMPILER="x86_64-w64-mingw32-gcc" -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }} -DUSE_OPENSSL_PC="OFF" -DOPENSSL_ROOT_DIR="$PWD/openssl" -DCMAKE_SYSTEM_NAME="Windows"'
     displayName: 'Run cmake to create make files'
 
   - task: CMake@1
