@@ -15,7 +15,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: ${{ parameters.workingDirectory }}
-      cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }}
+      cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }}'
     displayName: 'Run cmake to create make files'
 
   - task: CMake@1
