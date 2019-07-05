@@ -13,10 +13,8 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   
   steps:
-  - script: |
-      echo ${{ parameters.os }}
-      echo $[ parameters.os ]
-
+  # FIXME: if condition does not work becuase of the bug
+  # https://github.com/microsoft/azure-pipelines-yaml/issues/64
   - ${{ if eq(parameters.os, 'macOS') }}:
     - script: echo Mac
     - template: macOS-steps.yml

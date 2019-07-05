@@ -30,13 +30,13 @@ jobs:
       cmakeArgs: '--build ./'
     displayName: 'Run cmake to build the project'
 
-  - script: ctest --extra-verbose
+  - script: ctest --extra-verbose -O test_results.log
     workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Run unit tests'
 
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'CTest'
-      testResultsFiles: '**/TEST-*.xml'
+      testResultsFiles: test_results.log
       searchFolder: ${{ parameters.workingDirectory }}
     displayName: 'Publish unit tests results'
