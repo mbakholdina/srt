@@ -12,30 +12,21 @@ jobs:
     vmImage: ${{ parameters.vmImage }}
   
   steps:
-  - script: |
-      git clone https://github.com/openssl/openssl.git
-      cd openssl
-      git checkout origin/OpenSSL_1_1_0-stable -b OpenSSL_1_1_0-stable
-      ./Configure --cross-compile-prefix=x86_64-w64-mingw32- mingw64
-      make
-      cd ..
-    displayName: 'Install OpenSSL'
+  - task: CMake@1
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }}
+    displayName: 'Run cmake to create make files'
 
-  # - task: CMake@1
-  #   inputs:
-  #     workingDirectory: ${{ parameters.workingDirectory }}
-  #     cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }} -DCMAKE_PREFIX_PATH=/usr/local/opt/openssl'
-  #   displayName: 'Run cmake to create make files'
+  - task: CMake@1
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      cmakeArgs: '--build ./'
+    displayName: 'Run cmake to build the project'
 
-  # - task: CMake@1
-  #   inputs:
-  #     workingDirectory: ${{ parameters.workingDirectory }}
-  #     cmakeArgs: '--build ./'
-  #   displayName: 'Run cmake to build the project'
-
-  # - script: ctest --extra-verbose
-  #   workingDirectory: ${{ parameters.workingDirectory }}
-  #   displayName: 'Run unit tests'
+  - script: ctest --extra-verbose
+    workingDirectory: ${{ parameters.workingDirectory }}
+    displayName: 'Run unit tests'
 
   # - task: PublishTestResults@2
   #   inputs:

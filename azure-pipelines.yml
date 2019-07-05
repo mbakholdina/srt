@@ -41,19 +41,46 @@ jobs:
 #     buildType: $(configurationRelease)
 #     enableHeavyLogging: ON
 
-- template: templates/template-job.yml
+- template: templates/linux-job.yml
   parameters:
     os: $(osLinux)
-    name: Linux
+    name: Linux_debug
     vmImage: 'ubuntu-16.04'
+    buildType: $(configurationDebug)
 
 - template: templates/linux-job.yml
   parameters:
     os: $(osLinux)
-    name: Linux_2
+    name: Linux_release
     vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
 
-# - template: templates/npm-with-params.yml  # Template reference
-#   parameters:
-#     name: Windows
-#     vmImage: 'vs2017-win2016'
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_release_logging
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
+    enableLogging: ON
+
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_release_heavyLogging
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
+    enableHeavyLogging: ON
+
+- template: templates/linux-mingw-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_mingw_debug
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationDebug)
+
+- template: templates/linux-mingw-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_mingw_release
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
