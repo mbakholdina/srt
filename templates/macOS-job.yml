@@ -37,7 +37,6 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'CTest'
-      testResultsFiles: test_results.log
+      testResultsFiles: ${{ parameters.workingDirectory }}/test_results.log
       # searchFolder: ${{ parameters.workingDirectory }}
-    workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Publish unit tests results'
