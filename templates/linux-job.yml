@@ -28,6 +28,7 @@ jobs:
     workingDirectory: ${{ parameters.workingDirectory }}
     displayName: 'Run unit tests'
 
+  # FIXME: Enable test results publishing
   # - task: PublishTestResults@2
   #   inputs:
   #     testResultsFormat: 'CTest'

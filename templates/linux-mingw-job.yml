@@ -1,4 +1,5 @@
 # x86_64-w64-mingw32-g++ compiler
+# Not ready yet
 
 parameters:
   name: ''  # defaults for any parameters that aren't specified
@@ -23,7 +24,7 @@ jobs:
       sudo apt-get install g++-mingw-w64-x86-64
       # export CC="x86_64-w64-mingw32-gcc"
       # export CXX="x86_64-w64-mingw32-g++"
-      ls -l /usr/bin
+      # ls -l /usr/bin
     displayName: 'Install build dependencies'
 
   - script: |

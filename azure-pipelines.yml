@@ -11,65 +11,67 @@ variables:
   osLinux: Linux
 
 jobs:
-# - template: templates/template-job.yml
-#   parameters:
-#     os: $(osMacOS)
-#     name: macOS_debug
-#     vmImage: 'macOS-10.13'
-#     buildType: $(configurationDebug)
+- template: templates/macOS-job.yml
+  parameters:
+    os: $(osMacOS)
+    name: macOS_debug
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationDebug)
 
-# - template: templates/macOS-job.yml
-#   parameters:
-#     os: $(osMacOS)
-#     name: macOS_release
-#     vmImage: 'macOS-10.13'
-#     buildType: $(configurationRelease)
+- template: templates/macOS-job.yml
+  parameters:
+    os: $(osMacOS)
+    name: macOS_release
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
 
-# - template: templates/template-job.yml
-#   parameters:
-#     os: $(osMacOS)
-#     name: macOS_release_logging
-#     vmImage: 'macOS-10.13'
-#     buildType: $(configurationRelease)
-#     enableLogging: ON
+- template: templates/macOS-job.yml
+  parameters:
+    os: $(osMacOS)
+    name: macOS_release_logging
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
+    enableLogging: ON
 
-# - template: templates/template-job.yml
-#   parameters:
-#     os: $(osMacOS)
-#     name: macOS_release_heavyLogging
-#     vmImage: 'macOS-10.13'
-#     buildType: $(configurationRelease)
-#     enableHeavyLogging: ON
+- template: templates/macOS-job.yml
+  parameters:
+    os: $(osMacOS)
+    name: macOS_release_heavyLogging
+    vmImage: 'macOS-10.13'
+    buildType: $(configurationRelease)
+    enableLogging: ON
+    enableHeavyLogging: ON
 
-# - template: templates/linux-job.yml
-#   parameters:
-#     os: $(osLinux)
-#     name: Linux_debug
-#     vmImage: 'ubuntu-16.04'
-#     buildType: $(configurationDebug)
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_debug
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationDebug)
 
-# - template: templates/linux-job.yml
-#   parameters:
-#     os: $(osLinux)
-#     name: Linux_release
-#     vmImage: 'ubuntu-16.04'
-#     buildType: $(configurationRelease)
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_release
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
 
-# - template: templates/linux-job.yml
-#   parameters:
-#     os: $(osLinux)
-#     name: Linux_release_logging
-#     vmImage: 'ubuntu-16.04'
-#     buildType: $(configurationRelease)
-#     enableLogging: ON
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_release_logging
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
+    enableLogging: ON
 
-# - template: templates/linux-job.yml
-#   parameters:
-#     os: $(osLinux)
-#     name: Linux_release_heavyLogging
-#     vmImage: 'ubuntu-16.04'
-#     buildType: $(configurationRelease)
-#     enableHeavyLogging: ON
+- template: templates/linux-job.yml
+  parameters:
+    os: $(osLinux)
+    name: Linux_release_heavyLogging
+    vmImage: 'ubuntu-16.04'
+    buildType: $(configurationRelease)
+    enableLogging: ON
+    enableHeavyLogging: ON
 
 # - template: templates/linux-mingw-job.yml
 #   parameters:
@@ -78,9 +80,9 @@ jobs:
 #     vmImage: 'ubuntu-16.04'
 #     buildType: $(configurationDebug)
 
-- template: templates/linux-mingw-job.yml
-  parameters:
-    os: $(osLinux)
-    name: Linux_mingw_release
-    vmImage: 'ubuntu-16.04'
-    buildType: $(configurationRelease)
+# - template: templates/linux-mingw-job.yml
+#   parameters:
+#     os: $(osLinux)
+#     name: Linux_mingw_release
+#     vmImage: 'ubuntu-16.04'
+#     buildType: $(configurationRelease)
