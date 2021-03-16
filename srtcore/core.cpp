@@ -8148,11 +8148,26 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
     {
         int32_t ack = 0;
         const int rtt = m_ACKWindow.acknowledge(ctrlpkt.getAckSeqNo(), ack);
-        if (rtt <= 0)
+
+        // acknowledge function returns -1 if the record isn't found or rtt value
+        // which can be negative or zero
+
+        LOGC(inlog.Error,
+                 log << CONID() << "My log " << ctrlpkt.getAckSeqNo()
+                     << " (ack extracted: " << ack << ", rtt estimate: " << rtt << ")");
+
+        if (rtt == -1) // record not found
         {
             LOGC(inlog.Error,
                  log << CONID() << "IPE: ACK node overwritten when acknowledging " << ctrlpkt.getAckSeqNo()
-                     << " (ack extracted: " << ack << ")");
+                     << " (ack extracted: " << ack << ", rtt estimate: " << rtt << ")" << " -1");
+            break;
+        }
+        if (rtt != -1 && rtt <= 0) // negative or zero rtt estimate
+        {
+            LOGC(inlog.Error,
+                 log << CONID() << "IPE: ACK node overwritten when acknowledging " << ctrlpkt.getAckSeqNo()
+                     << " (ack extracted: " << ack << ", rtt estimate: " << rtt << ")");
             break;
         }
 
