@@ -7835,10 +7835,6 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         }
     }
 
-    //
-    // Begin of the new code with TLPKTDROP.
-    //
-
     // Protect packet retransmission
     enterCS(m_RecvAckLock);
 
@@ -7882,10 +7878,8 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
     m_iSndLastFullAck = ackdata_seqno;
 
-    //
-    // END of the new code with TLPKTDROP
-    //
     leaveCS(m_RecvAckLock);
+
 #if ENABLE_EXPERIMENTAL_BONDING
     if (m_parent->m_GroupOf)
     {
@@ -7920,6 +7914,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
     // This check covers fields up to ACKD_BUFFERLEFT.
 
+    // TODO: Delete comments, plus add motivation behind EWMA here
     // Update RTT
     // m_iRTT = ackdata[ACKD_RTT];
     // m_iRTTVar = ackdata[ACKD_RTTVAR];
