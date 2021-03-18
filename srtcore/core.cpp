@@ -8150,39 +8150,39 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
         const int rtt = m_ACKWindow.acknowledge(ctrlpkt.getAckSeqNo(), ack, currtime);
 
         LOGC(inlog.Error,
-                 log << CONID() << "Internal Error: The record about ACK is not found, "
+                 log << CONID() << "IPE: The record about ACK is not found, "
                      << "RTT estimate at the receiver side can not be calculated "
-                     << "(acknowledgments extracted: " << ack << ", ACK number: " << ctrlpkt.getAckSeqNo()
-                     << ", last ACK sent: " << m_iRcvLastAck
+                     << "(ACK number: " << ctrlpkt.getAckSeqNo()
+                     << ", last ACK sent: " << m_iAckSeqNo
                      << ", oldest ACK record: " << "not yet available"
-                     << ", RTT (EWMA) " << m_iRTT << ")");
+                     << ", RTT (EWMA): " << m_iRTT << ")");
 
         LOGC(inlog.Error,
-                 log << CONID() << "Internal Error: RTT estimate obtained by the receiver is negative or zero, "
+                 log << CONID() << "IPE: RTT estimate obtained by the receiver is negative or zero, "
                      << "there may have been a time shift "
-                     << "(current time: " << FormatTime(currtime) << "the time of sending ACK: " << "not yet available"
+                     << "(current time: " << FormatTime(currtime) << ", the time of sending ACK: " << "not yet available"
                      << " , RTT estimate: " << rtt << "). The usage of monotonic clocks is recommended. ");
 
         if (rtt == -1)
         {
-            LOGC(inlog.Error,
-                 log << CONID() << "Internal Error: The record about ACK is not found, "
-                     << "RTT estimate at the receiver side can not be calculated "
-                     << "(acknowledgments extracted: " << ack << ", ACK number: " << ctrlpkt.getAckSeqNo()
-                     << ", last ACK sent: " << m_iRcvLastAck
-                     << ", oldest ACK record: " << "not yet available"
-                     << ", RTT (EWMA) " << m_iRTT << ")");
+            // LOGC(inlog.Error,
+            //      log << CONID() << "Internal Error: The record about ACK is not found, "
+            //          << "RTT estimate at the receiver side can not be calculated "
+            //          << "(acknowledgments extracted: " << ack << ", ACK number: " << ctrlpkt.getAckSeqNo()
+            //          << ", last ACK sent: " << m_iRcvLastAck
+            //          << ", oldest ACK record: " << "not yet available"
+            //          << ", RTT (EWMA) " << m_iRTT << ")");
             break;
         }
 
         // If RTT estimate is negative or zero, there may have been a time shift
         if (rtt <= 0)
         {
-            LOGC(inlog.Error,
-                 log << CONID() << "Internal Error: RTT estimate obtained by the receiver is negative or zero, "
-                     << "there may have been a time shift "
-                     << "(current time: " << FormatTime(currtime) << "the time of sending ACK: " << "not yet available"
-                     << " , RTT estimate: " << rtt << "). The usage of monotonic clocks is recommended. ");
+            // LOGC(inlog.Error,
+            //      log << CONID() << "Internal Error: RTT estimate obtained by the receiver is negative or zero, "
+            //          << "there may have been a time shift "
+            //          << "(current time: " << FormatTime(currtime) << "the time of sending ACK: " << "not yet available"
+            //          << " , RTT estimate: " << rtt << "). The usage of monotonic clocks is recommended. ");
             break;
         }
 
