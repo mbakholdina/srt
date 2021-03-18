@@ -60,6 +60,7 @@ modified by
 #endif
 #include "udt.h"
 #include "packet.h"
+#include "sync.h"
 
 namespace ACKWindowTools
 {
@@ -71,7 +72,7 @@ namespace ACKWindowTools
    };
 
    void store(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t seq, int32_t ack);
-   int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t seq, int32_t& r_ack, const steady_clock::time_point& currtime);
+   int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t seq, int32_t& r_ack, const srt::sync::steady_clock::time_point& currtime);
 }
 
 template <size_t SIZE>
@@ -102,7 +103,7 @@ public:
       /// @param [out] ack the DATA ACK no. that matches the ACK-2 no.
       /// @return RTT.
 
-   int acknowledge(int32_t seq, int32_t& r_ack, const steady_clock::time_point& currtime)
+   int acknowledge(int32_t seq, int32_t& r_ack, const srt::sync::steady_clock::time_point& currtime)
    {
        return ACKWindowTools::acknowledge(m_aSeq, SIZE, m_iHead, m_iTail, seq, r_ack, currtime);
    }

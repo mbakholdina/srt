@@ -8160,7 +8160,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
         LOGC(inlog.Error,
                  log << CONID() << "Internal Error: RTT estimate obtained by the receiver is negative or zero, "
                      << "there may have been a time shift "
-                     << "(current time: " << currtime << "the time of sending ACK: " << "not yet available"
+                     << "(current time: " << FormatTime(currtime) << "the time of sending ACK: " << "not yet available"
                      << " , RTT estimate: " << rtt << "). The usage of monotonic clocks is recommended. ");
 
         if (rtt == -1)
@@ -8181,7 +8181,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
             LOGC(inlog.Error,
                  log << CONID() << "Internal Error: RTT estimate obtained by the receiver is negative or zero, "
                      << "there may have been a time shift "
-                     << "(current time: " << currtime << "the time of sending ACK: " << "not yet available"
+                     << "(current time: " << FormatTime(currtime) << "the time of sending ACK: " << "not yet available"
                      << " , RTT estimate: " << rtt << "). The usage of monotonic clocks is recommended. ");
             break;
         }
