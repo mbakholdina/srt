@@ -77,7 +77,7 @@ void store(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t s
       r_iTail = (r_iTail + 1) % size;
 }
 
-int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t seq, int32_t& r_ack)
+int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int32_t seq, int32_t& r_ack, const steady_clock::time_point& currtime)
 {
    if (r_iHead >= r_iTail)
    {
@@ -92,7 +92,7 @@ int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int3
             r_ack = r_aSeq[i].iACK;
 
             // calculate RTT
-            const int rtt = count_microseconds(steady_clock::now() - r_aSeq[i].tsTimeStamp);
+            const int rtt = count_microseconds(currtime - r_aSeq[i].tsTimeStamp);
 
             if (i + 1 == r_iHead)
             {
@@ -106,7 +106,7 @@ int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int3
          }
       }
 
-      // Bad input, the ACK node has been overwritten
+      // The record about ACK is not found in the buffer, RTT can not be calculated
       return -1;
    }
 
@@ -121,7 +121,7 @@ int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int3
          r_ack = r_aSeq[j].iACK;
 
          // calculate RTT
-         const int rtt = count_microseconds(steady_clock::now() - r_aSeq[j].tsTimeStamp);
+         const int rtt = count_microseconds(currtime - r_aSeq[j].tsTimeStamp);
 
          if (j == r_iHead)
          {
@@ -135,7 +135,7 @@ int acknowledge(Seq* r_aSeq, const size_t size, int& r_iHead, int& r_iTail, int3
       }
    }
 
-   // bad input, the ACK node has been overwritten
+   // The record about ACK is not found in the buffer, RTT can not be calculated
    return -1;
 }
 }
