@@ -8151,11 +8151,6 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
 
         // acknowledge function returns -1 if the record isn't found or rtt value
         // which can be negative or zero
-
-        LOGC(inlog.Error,
-                 log << CONID() << "My log " << ctrlpkt.getAckSeqNo()
-                     << " (ack extracted: " << ack << ", rtt estimate: " << rtt << ")");
-
         if (rtt == -1) // record not found
         {
             LOGC(inlog.Error,
