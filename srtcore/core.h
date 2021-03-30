@@ -871,6 +871,8 @@ private: // Receiving related data
     bool m_bTsbPd;                               // Peer sends TimeStamp-Based Packet Delivery Packets 
     bool m_bGroupTsbPd;                          // TSBPD should be used for GROUP RECEIVER instead
 
+    bool m_bIsFirstACK2;                         // If the incoming ACK2 is the first received since the connection
+
     srt::sync::CThread m_RcvTsbPdThread;         // Rcv TsbPD Thread handle
     srt::sync::Condition m_RcvTsbPdCond;         // TSBPD signals if reading is ready. Use together with m_RecvLock
     bool m_bTsbPdAckWakeup;                      // Signal TsbPd thread on Ack sent

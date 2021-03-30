@@ -220,7 +220,9 @@ void CUDT::construct()
     m_pSndLossList         = NULL;
     m_pRcvLossList         = NULL;
     m_iReorderTolerance    = 0;
-    m_iConsecEarlyDelivery = 0; // how many times so far the packet considered lost has been received before TTL expires
+    // How many times so far the packet considered lost has been received
+    // before TTL expires.
+    m_iConsecEarlyDelivery   = 0; 
     m_iConsecOrderedDelivery = 0;
 
     m_pSndQueue = NULL;
@@ -228,7 +230,8 @@ void CUDT::construct()
     m_pSNode    = NULL;
     m_pRNode    = NULL;
 
-    m_iSndHsRetryCnt      = SRT_MAX_HSRETRY + 1; // Will be reset to 0 for HSv5, this value is important for HSv4
+    // Will be reset to 0 for HSv5, this value is important for HSv4.
+    m_iSndHsRetryCnt = SRT_MAX_HSRETRY + 1;
 
     // Initial status
     m_bOpened             = false;
@@ -243,7 +246,7 @@ void CUDT::construct()
     m_RejectReason        = SRT_REJ_UNKNOWN;
     m_tsLastReqTime       = steady_clock::time_point();
     m_SrtHsSide           = HSD_DRAW;
-    m_uPeerSrtVersion     = 0; // not defined until connected.
+    m_uPeerSrtVersion     = 0;  // Not defined until connected.
     m_iTsbPdDelay_ms      = 0;
     m_iPeerTsbPdDelay_ms  = 0;
     m_bPeerTsbPd          = false;
@@ -252,11 +255,12 @@ void CUDT::construct()
     m_bTsbPdAckWakeup     = false;
     m_bGroupTsbPd         = false;
     m_bPeerTLPktDrop      = false;
+    m_bIsFirstACK2        = true;
 
-    // Initilize mutex and condition variables
+    // Initilize mutex and condition variables.
     initSynch();
 
-    // XXX: Unblock, when the callback is implemented
+    // XXX: Unblock, when the callback is implemented.
     // m_cbPacketArrival.set(this, &CUDT::defaultPacketArrival);
 }
 
@@ -7833,6 +7837,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     const int32_t* ackdata       = (const int32_t*)ctrlpkt.m_pcData;
     const int32_t  ackdata_seqno = ackdata[ACKD_RCVLASTACK];
 
+    // ?? Poor explanation, rework
     // Check the value of ACK in case when it was some rogue peer
     if (ackdata_seqno < 0)
     {
@@ -7840,15 +7845,20 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         // as the variable is of a signed type. So, SRT_SEQNO_NONE is
         // included, but it also triggers for any other kind of invalid value.
         // This check MUST BE DONE before making any operation on this number.
-        LOGC(inlog.Error, log << CONID() << "ACK: IPE/EPE: received invalid ACK value: " << ackdata_seqno
-                << " " << std::hex << ackdata_seqno << " (IGNORED)");
+        // ?? ackdata_seqno is printed twice
+        LOGC(inlog.Error,
+             log << CONID() << "ACK: IPE/EPE: received invalid ACK value: "
+                 << ackdata_seqno << " " << std::hex << ackdata_seqno << " (IGNORED)");
         return;
     }
 
+    // ?? Why not is_light_ACK, this should be right before if (isLiteAck)
+    // ?? What updateSndLossListOnACK(ackdata_seqno) is doing?
     const bool isLiteAck = ctrlpkt.getLength() == (size_t)SEND_LITE_ACK;
     HLOGC(inlog.Debug,
-          log << CONID() << "ACK covers: " << m_iSndLastDataAck << " - " << ackdata_seqno << " [ACK=" << m_iSndLastAck
-              << "]" << (isLiteAck ? "[LITE]" : "[FULL]"));
+          log << CONID() << "ACK covers: " << m_iSndLastDataAck << " - "
+              << ackdata_seqno << " [ACK=" << m_iSndLastAck << "]"
+              << (isLiteAck ? "[LITE]" : "[FULL]"));
 
     updateSndLossListOnACK(ackdata_seqno);
 
@@ -7870,8 +7880,11 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         return;
     }
 
+    // !! stopped here
+
     // Decide to send ACKACK or not
     {
+        // ??? This is confusing, see PR 1876
         // Sequence number of the ACK packet
         const int32_t ack_seqno = ctrlpkt.getAckSeqNo();
 
@@ -7981,6 +7994,22 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
 
     m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
     m_iRTT    = avg_iir<8>(m_iRTT, rtt);
+
+    // new code
+    // Update the values of smoothed RTT and the variation in RTT samples.
+        if (m_bIsFirstACK2)  // On the first RTT sample after initialization.
+        {
+            m_iRTT = rtt;
+            m_iRTTVar = m_iRTT >> 1;
+            m_bIsFirstACK2 = false;
+        }
+        else  // On subsequent RTT samples.
+        {
+            m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
+            m_iRTT = avg_iir<8>(m_iRTT, rtt);
+        }
+
+    //
 
     /* Version-dependent fields:
      * Original UDT (total size: ACKD_TOTAL_SIZE_SMALL):
@@ -8200,7 +8229,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
     {
         int32_t ack = 0;
 
-        // Calculate RTT estimate on the receiver side based on ACK/ACKACK pair
+        // Calculate RTT estimate on the receiver side based on ACK/ACKACK pair.
         const int rtt = m_ACKWindow.acknowledge(ctrlpkt.getAckSeqNo(), ack, currtime);
 
         if (rtt == -1)
@@ -8229,12 +8258,21 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
             break;
         }
 
-        // If increasing delay is detected
+        // If increasing delay is detected.
         //   sendCtrl(UMSG_CGWARNING);
 
-        // Calculate RTT (EWMA) on the receiver side
-        m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
-        m_iRTT = avg_iir<8>(m_iRTT, rtt);
+        // Update the values of smoothed RTT and the variation in RTT samples.
+        if (m_bIsFirstACK2)  // On the first RTT sample after initialization.
+        {
+            m_iRTT = rtt;
+            m_iRTTVar = m_iRTT >> 1;
+            m_bIsFirstACK2 = false;
+        }
+        else  // On subsequent RTT samples.
+        {
+            m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
+            m_iRTT = avg_iir<8>(m_iRTT, rtt);
+        }
 
         updateCC(TEV_ACKACK, EventVariant(ack));
 
