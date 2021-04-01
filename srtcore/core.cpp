@@ -255,7 +255,9 @@ void CUDT::construct()
     m_bTsbPdAckWakeup     = false;
     m_bGroupTsbPd         = false;
     m_bPeerTLPktDrop      = false;
-    m_bIsFirstACK2        = true;
+
+    m_bIsFirstACK2                    = true;
+    m_bFirstRealRTTEstimateExtracted  = false;
 
     // Initilize mutex and condition variables.
     initSynch();
@@ -908,8 +910,8 @@ void CUDT::open()
     m_pRNode->m_pPrev = m_pRNode->m_pNext = NULL;
     m_pRNode->m_bOnList                   = false;
 
-    m_iRTT    = 10 * COMM_SYN_INTERVAL_US;
-    m_iRTTVar = m_iRTT >> 1;
+    m_iRTT    = INITIAL_RTT;
+    m_iRTTVar = INITIAL_RTTVAR;
 
     // set minimum NAK and EXP timeout to 300ms
     m_tdMinNakInterval = milliseconds_from(300);
@@ -7884,7 +7886,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
 
     // Decide to send ACKACK or not
     {
-        // ??? This is confusing, see PR 1876
+        // ?? This is confusing, see PR 1876
         // Sequence number of the ACK packet
         const int32_t ack_seqno = ctrlpkt.getAckSeqNo();
 
@@ -7951,6 +7953,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     // END of the new code with TLPKTDROP
     //
     leaveCS(m_RecvAckLock);
+
 #if ENABLE_EXPERIMENTAL_BONDING
     if (m_parent->m_GroupOf)
     {
@@ -7985,31 +7988,26 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
     // This check covers fields up to ACKD_BUFFERLEFT.
 
-    // Update RTT
-    // m_iRTT = ackdata[ACKD_RTT];
-    // m_iRTTVar = ackdata[ACKD_RTTVAR];
-    // XXX These ^^^ commented-out were blocked in UDT;
-    // the current RTT calculations are exactly the same as in UDT4.
+    // Extract RTT and RTTVar estimates from the ACK.
     const int rtt = ackdata[ACKD_RTT];
+    const int rttvar = ackdata[ACKD_RTTVAR];
 
-    m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
-    m_iRTT    = avg_iir<8>(m_iRTT, rtt);
+    // On the first real RTT estimate (not equal to INITIAL_RTT) extracted
+    // from the ACK after initialization.
+    if (!m_bFirstRealRTTEstimateExtracted && rtt != INITIAL_RTT && rttvar != INITIAL_RTTVAR)
+    {
+        m_iRTT = rtt;
+        m_iRTTVar = m_iRTT >> 1;
+        m_bFirstRealRTTEstimateExtracted = true;
+    }
 
-    // new code
-    // Update the values of smoothed RTT and the variation in RTT samples.
-        if (m_bIsFirstACK2)  // On the first RTT sample after initialization.
-        {
-            m_iRTT = rtt;
-            m_iRTTVar = m_iRTT >> 1;
-            m_bIsFirstACK2 = false;
-        }
-        else  // On subsequent RTT samples.
-        {
-            m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
-            m_iRTT = avg_iir<8>(m_iRTT, rtt);
-        }
-
-    //
+    // Update the values of smoothed RTT and the variation in RTT samples
+    // on subsequent RTT estimates extracted from the ACK packets.
+    if (m_bFirstRealRTTEstimateExtracted)
+    {
+        m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
+        m_iRTT = avg_iir<8>(m_iRTT, rtt);
+    }
 
     /* Version-dependent fields:
      * Original UDT (total size: ACKD_TOTAL_SIZE_SMALL):
