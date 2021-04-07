@@ -220,7 +220,9 @@ void CUDT::construct()
     m_pSndLossList         = NULL;
     m_pRcvLossList         = NULL;
     m_iReorderTolerance    = 0;
-    m_iConsecEarlyDelivery = 0; // how many times so far the packet considered lost has been received before TTL expires
+    // How many times so far the packet considered lost has been received
+    // before TTL expires.
+    m_iConsecEarlyDelivery   = 0; 
     m_iConsecOrderedDelivery = 0;
 
     m_pSndQueue = NULL;
@@ -228,7 +230,8 @@ void CUDT::construct()
     m_pSNode    = NULL;
     m_pRNode    = NULL;
 
-    m_iSndHsRetryCnt      = SRT_MAX_HSRETRY + 1; // Will be reset to 0 for HSv5, this value is important for HSv4
+    // Will be reset to 0 for HSv5, this value is important for HSv4.
+    m_iSndHsRetryCnt = SRT_MAX_HSRETRY + 1;
 
     // Initial status
     m_bOpened             = false;
@@ -243,7 +246,7 @@ void CUDT::construct()
     m_RejectReason        = SRT_REJ_UNKNOWN;
     m_tsLastReqTime       = steady_clock::time_point();
     m_SrtHsSide           = HSD_DRAW;
-    m_uPeerSrtVersion     = 0; // not defined until connected.
+    m_uPeerSrtVersion     = 0;  // Not defined until connected.
     m_iTsbPdDelay_ms      = 0;
     m_iPeerTsbPdDelay_ms  = 0;
     m_bPeerTsbPd          = false;
@@ -253,10 +256,10 @@ void CUDT::construct()
     m_bGroupTsbPd         = false;
     m_bPeerTLPktDrop      = false;
 
-    // Initilize mutex and condition variables
+    // Initilize mutex and condition variables.
     initSynch();
 
-    // XXX: Unblock, when the callback is implemented
+    // XXX: Unblock, when the callback is implemented.
     // m_cbPacketArrival.set(this, &CUDT::defaultPacketArrival);
 }
 
@@ -5422,14 +5425,15 @@ void CUDT::acceptAndRespond(const sockaddr_any& agent, const sockaddr_any& peer,
     // And of course, it is connected.
     m_bConnected = true;
 
-    // register this socket for receiving data packets
+    // Register this socket for receiving data packets.
     m_pRNode->m_bOnList = true;
     m_pRcvQueue->setNewEntry(this);
 
     // Save the handshake in m_ConnRes in case when needs repeating.
     m_ConnRes = w_hs;
 
-    // send the response to the peer, see listen() for more discussions about this
+    // Send the response to the peer, see listen() for more discussions
+    // about this.
     // XXX Here create CONCLUSION RESPONSE with:
     // - just the UDT handshake, if HS_VERSION_UDT4,
     // - if higher, the UDT handshake, the SRT HSRSP, the SRT KMRSP
@@ -7830,8 +7834,10 @@ void CUDT::updateSndLossListOnACK(int32_t ackdata_seqno)
 void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point& currtime)
 {
     const int32_t* ackdata       = (const int32_t*)ctrlpkt.m_pcData;
+    // ?? Update the largest acknowledged sequence number. - better variable name 
     const int32_t  ackdata_seqno = ackdata[ACKD_RCVLASTACK];
 
+    // ?? Poor explanation, rework
     // Check the value of ACK in case when it was some rogue peer
     if (ackdata_seqno < 0)
     {
@@ -7839,19 +7845,24 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         // as the variable is of a signed type. So, SRT_SEQNO_NONE is
         // included, but it also triggers for any other kind of invalid value.
         // This check MUST BE DONE before making any operation on this number.
-        LOGC(inlog.Error, log << CONID() << "ACK: IPE/EPE: received invalid ACK value: " << ackdata_seqno
-                << " " << std::hex << ackdata_seqno << " (IGNORED)");
+        // ?? ackdata_seqno is printed twice
+        LOGC(inlog.Error,
+             log << CONID() << "ACK: IPE/EPE: received invalid ACK value: "
+                 << ackdata_seqno << " " << std::hex << ackdata_seqno << " (IGNORED)");
         return;
     }
 
+    // ?? Why not is_light_ACK, this should be right before if (isLiteAck)
+    // ?? What updateSndLossListOnACK(ackdata_seqno) is doing?
     const bool isLiteAck = ctrlpkt.getLength() == (size_t)SEND_LITE_ACK;
     HLOGC(inlog.Debug,
-          log << CONID() << "ACK covers: " << m_iSndLastDataAck << " - " << ackdata_seqno << " [ACK=" << m_iSndLastAck
-              << "]" << (isLiteAck ? "[LITE]" : "[FULL]"));
+          log << CONID() << "ACK covers: " << m_iSndLastDataAck << " - "
+              << ackdata_seqno << " [ACK=" << m_iSndLastAck << "]"
+              << (isLiteAck ? "[LITE]" : "[FULL]"));
 
     updateSndLossListOnACK(ackdata_seqno);
 
-    // Process a lite ACK
+    // Process light ACK.
     if (isLiteAck)
     {
         if (CSeqNo::seqcmp(ackdata_seqno, m_iSndLastAck) >= 0)
@@ -7869,10 +7880,24 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         return;
     }
 
-    // Decide to send ACKACK or not
+    // Decide to send an ACKACK or not.
     {
+        // ?? This is confusing, see PR 1876 - create an issue for suggested changes
         // Sequence number of the ACK packet
         const int32_t ack_seqno = ctrlpkt.getAckSeqNo();
+
+        // ?? https://github.com/Haivision/srt/issues/1159
+        // Figure out how it was done in UDT. From the draft
+        // On ACK packet received:
+        // 1) Update the largest acknowledged sequence number.
+        // 2) Send back an ACK2 with the same ACK sequence number in this ACK.
+        // 3) Update RTT and RTTVar.
+        // 4) Update both ACK and NAK period to 4 * RTT + RTTVar + SYN.
+        // 5) Update flow window size.
+        // 6) If this is a Light ACK, stop.
+
+        // ?? According to UDT draft we send ACK2 for light ACKs as well - check the code.
+        // !! Stopped here
 
         // Send ACK acknowledgement (UMSG_ACKACK).
         // There can be less ACKACK packets in the stream, than the number of ACK packets.
@@ -7881,8 +7906,8 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         if ((currtime - m_SndLastAck2Time > microseconds_from(COMM_SYN_INTERVAL_US)) || (ack_seqno == m_iSndLastAck2))
         {
             sendCtrl(UMSG_ACKACK, &ack_seqno);
-            m_iSndLastAck2       = ack_seqno;
-            m_SndLastAck2Time = currtime;
+            m_iSndLastAck2     = ack_seqno;
+            m_SndLastAck2Time  = currtime;
         }
     }
 
@@ -7937,6 +7962,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     // END of the new code with TLPKTDROP
     //
     leaveCS(m_RecvAckLock);
+
 #if ENABLE_EXPERIMENTAL_BONDING
     if (m_parent->m_GroupOf)
     {
@@ -8199,7 +8225,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
     {
         int32_t ack = 0;
 
-        // Calculate RTT estimate on the receiver side based on ACK/ACKACK pair
+        // Calculate RTT estimate on the receiver side based on ACK/ACKACK pair.
         const int rtt = m_ACKWindow.acknowledge(ctrlpkt.getAckSeqNo(), ack, currtime);
 
         if (rtt == -1)
@@ -8228,7 +8254,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
             break;
         }
 
-        // If increasing delay is detected
+        // If increasing delay is detected.
         //   sendCtrl(UMSG_CGWARNING);
 
         // Calculate RTT (EWMA) on the receiver side
