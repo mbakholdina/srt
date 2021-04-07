@@ -7994,19 +7994,25 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
 
     // On the first real RTT estimate (not equal to INITIAL_RTT) extracted
     // from the ACK after initialization.
-    if (!m_bFirstRealRTTEstimateExtracted && rtt != INITIAL_RTT && rttvar != INITIAL_RTTVAR)
-    {
-        m_iRTT = rtt;
-        m_iRTTVar = m_iRTT >> 1;
-        m_bFirstRealRTTEstimateExtracted = true;
-    }
+    // if (!m_bFirstRealRTTEstimateExtracted && rtt != INITIAL_RTT && rttvar != INITIAL_RTTVAR)
+    // {
+    //     m_iRTT = rtt;
+    //     m_iRTTVar = m_iRTT >> 1;
+    //     m_bFirstRealRTTEstimateExtracted = true; // !! mistake here
+    // }
 
     // Update the values of smoothed RTT and the variation in RTT samples
     // on subsequent RTT estimates extracted from the ACK packets.
     if (m_bFirstRealRTTEstimateExtracted)
     {
         m_iRTTVar = avg_iir<4>(m_iRTTVar, abs(rtt - m_iRTT));
-        m_iRTT = avg_iir<8>(m_iRTT, rtt);
+        m_iRTT    = avg_iir<8>(m_iRTT, rtt);
+    }
+    else if (rtt != INITIAL_RTT && rttvar != INITIAL_RTTVAR)
+    {
+        m_iRTT = rtt;
+        m_iRTTVar = m_iRTT >> 1;
+        m_bFirstRealRTTEstimateExtracted = true;
     }
 
     /* Version-dependent fields:
@@ -8263,7 +8269,7 @@ void CUDT::processCtrl(const CPacket &ctrlpkt)
         if (m_bIsFirstACK2)  // On the first RTT sample after initialization.
         {
             m_iRTT = rtt;
-            m_iRTTVar = m_iRTT >> 1;
+            m_iRTTVar = rtt / 2;
             m_bIsFirstACK2 = false;
         }
         else  // On subsequent RTT samples.
