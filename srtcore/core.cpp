@@ -7833,7 +7833,7 @@ void CUDT::updateSndLossListOnACK(int32_t ackdata_seqno)
 
 void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point& currtime)
 {
-    // Extract data from an ACK packet.
+    // Extract data from an ACK packet. - CIF
     const int32_t* ackdata       = (const int32_t*)ctrlpkt.m_pcData;
     // ?? Update the largest acknowledged sequence number. - better variable name 
     const int32_t  ackdata_seqno = ackdata[ACKD_RCVLASTACK];
@@ -7853,6 +7853,10 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
                  << ackdata_seqno << " " << std::hex << ackdata_seqno << " (IGNORED)");
         return;
     }
+
+    // here we should do - updateSndLossListOnACK(ackdata_seqno);
+    // but it's done later because we have the log
+    // we just should out hte log right before this snd lost list
 
     // !! Variable for ACK size
 
@@ -7875,6 +7879,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
             m_iFlowWindowSize -= CSeqNo::seqoff(m_iSndLastAck, ackdata_seqno);
             m_iSndLastAck = ackdata_seqno;
 
+            // ! old message, move earlier as comment
             // TODO: m_tsLastRspAckTime should be protected with m_RecvAckLock
             // because the sendmsg2 may want to change it at the same time.
             m_tsLastRspAckTime = currtime;
@@ -7885,7 +7890,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
 
     // Decide to send an ACKACK or not.
-    // ?? Why do we need {} without any condition here
+    // ?? Why do we need {} without any condition here - delete
     {
         // ?? This is confusing, see PR 1876 - create an issue for suggested changes - for renaming
         // the name is coming from udt
@@ -7914,6 +7919,14 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         // !! As a result, light ACK - no ACKACK. Small ACK or Full ACK - sending ACKACK as both of them contain RTT estimates.
         // We shouldn't correct the code, we should correct RFC - section 3.2.4 + RTT estimation (only small and Full ACKs are taken into account).
 
+        // !!! Here we should add the check that the ACK number isn't equal to 0 (not light)
+        // check first number - 0 or 1
+        // if 0 -> IPE
+
+        // if ack seqno > 0: // we should send ACKACK (for both small and full ACK)
+        //      if ((currtime - m_SndLastAck2Time > microseconds_from(COMM_SYN_INTERVAL_US)) || (ack_seqno > m_iSndLastAck2))
+        // Write this in RFC as a note
+
         // Send ACK acknowledgement (UMSG_ACKACK).
         // There can be less ACKACK packets in the stream, than the number of ACK packets.
         // Only send ACKACK every syn interval or if ACK packet with the sequence number
@@ -7930,6 +7943,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     // Begin of the new code with TLPKTDROP.
     //
 
+    //! main motivation - update m_iSndLastAck
     // ?? mutex
 
     // Protect packet retransmission
@@ -7948,6 +7962,9 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         return;
     }
 
+    // ! if we acknowledge new data packets
+    // m_iSndLastAck - bad name - prevoius ackdata_seqno
+    // error - no check for size and we extract - ackdata[ACKD_BUFFERLEFT];
     if (CSeqNo::seqcmp(ackdata_seqno, m_iSndLastAck) >= 0)
     {
         // Update Flow Window Size, must update before and together with m_iSndLastAck
@@ -7967,6 +7984,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
      * which may go crazy and stay there, preventing proper stream recovery.
      */
 
+    // ! probably related to group
     if (CSeqNo::seqoff(m_iSndLastFullAck, ackdata_seqno) <= 0)
     {
         // discard it if it is a repeated ACK
@@ -7995,13 +8013,16 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
 
     // !! make a variable for ack_size at the very beginning, because it's used for the understanding whether it's light ACK or not
     // ?? what's the logic behind wrong size - should we check it for light ACKs
+    // ?? ACKD_FIELD_SIZE
 
-    // stopped here!!!
-    
+    // TODO: Improve the logic with checking the correctness of size
+
     size_t acksize   = ctrlpkt.getLength(); // TEMPORARY VALUE FOR CHECKING
     bool   wrongsize = 0 != (acksize % ACKD_FIELD_SIZE);
     acksize          = acksize / ACKD_FIELD_SIZE; // ACTUAL VALUE
 
+    // !! we don't need a variable wrongsize here
+    // ?? Should we have return here
     if (wrongsize)
     {
         // Issue a log, but don't do anything but skipping the "odd" bytes from the payload.
@@ -8044,6 +8065,7 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
      *   ACKD_XMRATE
      */
 
+    // ! error - check for full ack size
     if (acksize > ACKD_TOTAL_SIZE_SMALL)
     {
         // This means that ACKD_RCVSPEED and ACKD_BANDWIDTH fields are available.
@@ -8075,6 +8097,8 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     checkSndTimers(REGEN_KM);
     updateCC(TEV_ACK, EventVariant(ackdata_seqno));
 
+    // !! stats takes into account everything except light acks
+    // do we need to take into account lite acks?
     enterCS(m_StatsLock);
     ++m_stats.recvACK;
     ++m_stats.recvACKTotal;
