@@ -7833,11 +7833,13 @@ void CUDT::updateSndLossListOnACK(int32_t ackdata_seqno)
 
 void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point& currtime)
 {
+    // Extract data from an ACK packet.
     const int32_t* ackdata       = (const int32_t*)ctrlpkt.m_pcData;
     // ?? Update the largest acknowledged sequence number. - better variable name 
     const int32_t  ackdata_seqno = ackdata[ACKD_RCVLASTACK];
 
     // ?? Poor explanation, rework
+    // ?? May it be string or something else - is it enough to check for <0 only
     // Check the value of ACK in case when it was some rogue peer
     if (ackdata_seqno < 0)
     {
@@ -7852,8 +7854,10 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         return;
     }
 
+    // !! Variable for ACK size
+
     // ?? Why not is_light_ACK, this should be right before if (isLiteAck)
-    // ?? What updateSndLossListOnACK(ackdata_seqno) is doing?
+    // ?? What updateSndLossListOnACK(ackdata_seqno) is doing? Why it's here and not under the condition if it's light ACK
     const bool isLiteAck = ctrlpkt.getLength() == (size_t)SEND_LITE_ACK;
     HLOGC(inlog.Debug,
           log << CONID() << "ACK covers: " << m_iSndLastDataAck << " - "
@@ -7881,8 +7885,10 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
 
     // Decide to send an ACKACK or not.
+    // ?? Why do we need {} without any condition here
     {
-        // ?? This is confusing, see PR 1876 - create an issue for suggested changes
+        // ?? This is confusing, see PR 1876 - create an issue for suggested changes - for renaming
+        // the name is coming from udt
         // Sequence number of the ACK packet
         const int32_t ack_seqno = ctrlpkt.getAckSeqNo();
 
@@ -7897,7 +7903,16 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
         // 6) If this is a Light ACK, stop.
 
         // ?? According to UDT draft we send ACK2 for light ACKs as well - check the code.
-        // !! Stopped here
+        // According to code, no
+        // Then the next condition is exactly the conditon from the UDT code
+
+        // ?? In our RFC: small ACK contains RTT estimates, in code we send ACKs for full and small.
+        // In RFC - only for full.
+        // Criterias of sending small ACKs?
+        // RFC should be corrected appropriately.
+
+        // !! As a result, light ACK - no ACKACK. Small ACK or Full ACK - sending ACKACK as both of them contain RTT estimates.
+        // We shouldn't correct the code, we should correct RFC - section 3.2.4 + RTT estimation (only small and Full ACKs are taken into account).
 
         // Send ACK acknowledgement (UMSG_ACKACK).
         // There can be less ACKACK packets in the stream, than the number of ACK packets.
@@ -7914,6 +7929,8 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     //
     // Begin of the new code with TLPKTDROP.
     //
+
+    // ?? mutex
 
     // Protect packet retransmission
     enterCS(m_RecvAckLock);
@@ -7976,6 +7993,11 @@ void CUDT::processCtrlAck(const CPacket &ctrlpkt, const steady_clock::time_point
     }
 #endif
 
+    // !! make a variable for ack_size at the very beginning, because it's used for the understanding whether it's light ACK or not
+    // ?? what's the logic behind wrong size - should we check it for light ACKs
+
+    // stopped here!!!
+    
     size_t acksize   = ctrlpkt.getLength(); // TEMPORARY VALUE FOR CHECKING
     bool   wrongsize = 0 != (acksize % ACKD_FIELD_SIZE);
     acksize          = acksize / ACKD_FIELD_SIZE; // ACTUAL VALUE
