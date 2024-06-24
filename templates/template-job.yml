@@ -1,0 +1,45 @@
+parameters:
+  os: ''
+  name: ''  # defaults for any parameters that aren't specified
+  vmImage: ''
+  workingDirectory: build
+  buildType: Release
+  enableLogging: OFF
+  enableHeavyLogging: OFF
+
+jobs:
+- job: ${{ parameters.name }}
+  pool: 
+    vmImage: ${{ parameters.vmImage }}
+  
+  steps:
+  # FIXME: if condition does not work becuase of the bug
+  # https://github.com/microsoft/azure-pipelines-yaml/issues/64
+  - ${{ if eq(parameters.os, 'macOS') }}:
+    - script: echo Mac
+    - template: macOS-steps.yml
+      parameters:
+        workingDirectory: ${{ parameters.workingDirectory }}
+        buildType: ${{ parameters.buildType }}
+        enableLogging: ${{ parameters.enableLogging }}
+        enableHeavyLogging: ${{ parameters.enableHeavyLogging }}
+
+  - ${{ if eq(parameters.os, 'Linux') }}:
+    - script: echo Linux
+    - template: linux-steps.yml
+      parameters:
+        workingDirectory: ${{ parameters.workingDirectory }}
+        buildType: ${{ parameters.buildType }}
+        enableLogging: ${{ parameters.enableLogging }}
+        enableHeavyLogging: ${{ parameters.enableHeavyLogging }}
+
+  - script: ctest --extra-verbose
+    workingDirectory: ${{ parameters.workingDirectory }}
+    displayName: 'Run unit tests'
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'CTest'
+      testResultsFiles: '**/TEST-*.xml'
+      searchFolder: ${{ parameters.workingDirectory }}
+    displayName: 'Publish unit tests results'

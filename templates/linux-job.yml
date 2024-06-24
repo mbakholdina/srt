@@ -1,0 +1,37 @@
+parameters:
+  name: ''  # defaults for any parameters that aren't specified
+  vmImage: ''
+  workingDirectory: build
+  buildType: ''
+  enableLogging: OFF
+  enableHeavyLogging: OFF
+
+jobs:
+- job: ${{ parameters.name }}
+  pool: 
+    vmImage: ${{ parameters.vmImage }}
+  
+  steps:
+  - task: CMake@1
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      cmakeArgs: '../ -DCMAKE_BUILD_TYPE=${{ parameters.buildType }} -DENABLE_UNITTESTS="ON" -DENABLE_LOGGING=${{ parameters.enableLogging }} -DENABLE_HEAVY_LOGGING=${{ parameters.enableHeavyLogging }}'
+    displayName: 'Run cmake to create make files'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: ${{ parameters.workingDirectory }}
+      cmakeArgs: '--build ./'
+    displayName: 'Run cmake to build the project'
+
+  - script: ctest --extra-verbose
+    workingDirectory: ${{ parameters.workingDirectory }}
+    displayName: 'Run unit tests'
+
+  # FIXME: Enable test results publishing
+  # - task: PublishTestResults@2
+  #   inputs:
+  #     testResultsFormat: 'CTest'
+  #     testResultsFiles: '**/TEST-*.xml'
+  #     searchFolder: ${{ parameters.workingDirectory }}
+  #   displayName: 'Publish unit tests results'
